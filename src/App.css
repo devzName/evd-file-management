@@ -222,6 +222,60 @@ select {
   font-weight: 700;
 }
 
+.notifications {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 50;
+  display: grid;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+}
+
+.notification {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dce3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(39, 54, 83, 0.16);
+  color: #172033;
+}
+
+.notification span {
+  min-width: 0;
+}
+
+.notification button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+.notification-success {
+  border-color: #b8e6c8;
+  color: #146c43;
+}
+
+.notification-error {
+  border-color: #ffc9c0;
+  color: #9b271a;
+}
+
+.notification-info {
+  border-color: #c6d7f6;
+  color: #1e3f77;
+}
+
 .table-shell {
   position: relative;
   overflow: hidden;

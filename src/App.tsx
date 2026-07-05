@@ -6,13 +6,16 @@ import { DocumentFormModal } from './components/DocumentFormModal'
 import { DocumentTable } from './components/DocumentTable'
 import { DocumentToolbar } from './components/DocumentToolbar'
 import { ImportModal } from './components/ImportModal'
+import { Notifications } from './components/Notifications'
 import { Pagination } from './components/Pagination'
 import { useI18n } from './i18n'
 import { useDocumentsStore } from './store/useDocumentsStore'
+import { useNotificationsStore } from './store/useNotificationsStore'
 import type { DocumentRecord } from './types/document'
 
 function App() {
   const { locale, setLocale, t } = useI18n()
+  const notify = useNotificationsStore((state) => state.notify)
   const {
     documents,
     total,
@@ -40,12 +43,61 @@ function App() {
     void fetchDocuments()
   }, [fetchDocuments])
 
+  const getErrorMessage = (error: unknown, fallbackKey: string) =>
+    error instanceof Error ? error.message : t(fallbackKey)
+
+  const handleCreateOrUpdate = async (document: DocumentRecord | null, values: Parameters<typeof createDocument>[0]) => {
+    try {
+      if (document) {
+        await updateDocument(document.id, values)
+        notify('success', t('notification.updateSuccess'))
+      } else {
+        await createDocument(values)
+        notify('success', t('notification.createSuccess'))
+      }
+    } catch (error) {
+      notify('error', getErrorMessage(error, 'notification.saveError'))
+      throw error
+    }
+  }
+
+  const handleInlineSave = async (id: string, values: Parameters<typeof updateDocument>[1]) => {
+    try {
+      await updateDocument(id, values)
+      notify('success', t('notification.updateSuccess'))
+    } catch (error) {
+      notify('error', getErrorMessage(error, 'notification.saveError'))
+      throw error
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDocument(id)
+      notify('success', t('notification.deleteSuccess'))
+    } catch (error) {
+      notify('error', getErrorMessage(error, 'notification.deleteError'))
+      throw error
+    }
+  }
+
+  const handleImport = async (rows: Parameters<typeof importDocuments>[0]) => {
+    try {
+      await importDocuments(rows)
+      notify('success', t('notification.importSuccess', { count: rows.length }))
+    } catch (error) {
+      notify('error', getErrorMessage(error, 'notification.importError'))
+      throw error
+    }
+  }
+
   useEffect(() => {
     loadDocuments()
   }, [filters, loadDocuments])
 
   return (
     <main className="app-shell">
+      <Notifications />
       <header className="app-header">
         <div>
           <span className="eyebrow">{t('app.section')}</span>
@@ -108,7 +160,7 @@ function App() {
         saving={saving}
         onEdit={(document) => setFormDocument(document)}
         onDelete={(document) => setDeleteTarget(document)}
-        onInlineSave={updateDocument}
+        onInlineSave={handleInlineSave}
       />
 
       <Pagination
@@ -125,7 +177,7 @@ function App() {
           busy={saving}
           currentUser={currentUser}
           onClose={() => setFormDocument(undefined)}
-          onSubmit={(values) => (formDocument ? updateDocument(formDocument.id, values) : createDocument(values))}
+          onSubmit={(values) => handleCreateOrUpdate(formDocument, values)}
         />
       )}
 
@@ -137,7 +189,7 @@ function App() {
           busy={saving}
           onCancel={() => setDeleteTarget(null)}
           onConfirm={async () => {
-            await deleteDocument(deleteTarget.id)
+            await handleDelete(deleteTarget.id)
             setDeleteTarget(null)
           }}
         />
@@ -148,7 +200,7 @@ function App() {
           busy={saving}
           importProgress={importProgress}
           onClose={() => setImportOpen(false)}
-          onImport={importDocuments}
+          onImport={handleImport}
         />
       )}
     </main>
