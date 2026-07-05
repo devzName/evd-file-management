@@ -62,6 +62,9 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
         >
           <ChevronLeft size={18} />
         </button>
+        <span className="pagination-current">
+          {t('pagination.page')} {page} / {totalPages}
+        </span>
         {pageItems.map((item, index) =>
           item === 'ellipsis' ? (
             <span className="pagination-ellipsis" key={`ellipsis-${index}`}>

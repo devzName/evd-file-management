@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertCircle, ShieldCheck } from 'lucide-react'
 import './App.css'
 import { ConfirmDialog } from './components/ConfirmDialog'
@@ -38,6 +38,7 @@ function App() {
   const [formDocument, setFormDocument] = useState<DocumentRecord | null | undefined>(undefined)
   const [deleteTarget, setDeleteTarget] = useState<DocumentRecord | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const pendingScrollYRef = useRef<number | null>(null)
 
   const loadDocuments = useCallback(() => {
     void fetchDocuments()
@@ -91,9 +92,24 @@ function App() {
     }
   }
 
+  const keepPageScroll = (action: () => void) => {
+    pendingScrollYRef.current = window.scrollY
+    action()
+  }
+
   useEffect(() => {
     loadDocuments()
   }, [filters, loadDocuments])
+
+  useEffect(() => {
+    if (pendingScrollYRef.current === null) return
+
+    const scrollY = pendingScrollYRef.current
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY)
+      if (!loading) pendingScrollYRef.current = null
+    })
+  }, [documents, loading])
 
   return (
     <main className="app-shell">
@@ -167,8 +183,8 @@ function App() {
         page={filters.page}
         pageSize={filters.pageSize}
         total={total}
-        onPageChange={(page) => setFilters({ page })}
-        onPageSizeChange={(pageSize) => setFilters({ pageSize })}
+        onPageChange={(page) => keepPageScroll(() => setFilters({ page }))}
+        onPageSizeChange={(pageSize) => keepPageScroll(() => setFilters({ pageSize }))}
       />
 
       {formDocument !== undefined && (

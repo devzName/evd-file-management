@@ -129,12 +129,12 @@ export function DocumentTable({
 
   return (
     <section className="table-shell" aria-label="Documents table">
-      <div className="table-head">
-        {columns.map((column) => (
-          <div key={column}>{column}</div>
-        ))}
-      </div>
       <div ref={parentRef} className="table-scroll">
+        <div className="table-head">
+          {columns.map((column) => (
+            <div key={column}>{column}</div>
+          ))}
+        </div>
         {loading && <div className="loading-cover">{t('table.loading')}</div>}
         <div style={{ height: totalSize, position: 'relative' }}>
           {virtualRows.map((virtualRow) => {
@@ -153,7 +153,7 @@ export function DocumentTable({
                   <input value={draft.code} onChange={(event) => updateField(document, 'code', event.target.value)} />
                   {rowErrors.code && <small>{t(rowErrors.code)}</small>}
                 </label>
-                <label className="cell editable-cell title-cell">
+                <label className="cell editable-cell">
                   <input
                     value={draft.title}
                     onChange={(event) => updateField(document, 'title', event.target.value)}
