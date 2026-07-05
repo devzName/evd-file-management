@@ -5,7 +5,7 @@ import App from './App.tsx'
 import { I18nProvider } from './i18n'
 
 async function enableMocking() {
-  if (import.meta.env.PROD) return
+  // if (import.meta.env.PROD) return
 
   const { worker } = await import('./mocks/browser')
 
